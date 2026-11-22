@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<title>Windows Health | Diagnostic report</title><style>:root {
+  color-scheme: light;
+  --ink: #172c3a;
+  --muted: #516775;
+  --line: #d8e2e5;
+  --paper: #fff;
+  font: 16px/1.5 "Segoe UI", system-ui, sans-serif;
+  color: var(--ink);
+  background: #f3f7f7;
+}
+* { box-sizing: border-box; }
+body, h1, h2, p, dl, dd, ul { margin: 0; }
+ul { list-style: none; padding: 0; }
+a { color: inherit; }
+a:focus-visible, [tabindex]:focus-visible { outline: 3px solid #159fa0; outline-offset: 3px; }
+svg { width: 1.25rem; height: 1.25rem; flex: none; }
+.inner { max-width: 1250px; margin: auto; padding-inline: clamp(1rem, 4.5vw, 4rem); }
+header { background: #102c36; color: white; border-bottom: 3px solid #56c9bc; }
+.top, nav, .brand, .timestamp, .meta, .section-head, .metric-head, .disk-head, footer {
+  display: flex; align-items: center;
+}
+.top { justify-content: space-between; min-height: 66px; }
+.brand { gap: .7rem; font-size: 1.12rem; font-weight: 650; letter-spacing: -.035em; text-decoration: none; }
+.brand i, .icon, .finding-icon { display: inline-grid; place-items: center; border-radius: 8px; }
+.brand i { width: 32px; height: 32px; background: #69d9ca; color: #123844; }
+nav { gap: clamp(.8rem, 3vw, 2.4rem); }
+nav a, footer a { font-size: .85rem; text-decoration: none; font-weight: 600; }
+nav a { color: #e0efef; }
+a:hover { text-decoration: underline; }
+.intro { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding-block: 2.65rem 1.65rem; }
+.eyebrow { display: flex; align-items: center; gap: .5rem; color: #08655f; font-weight: 750; text-transform: uppercase; letter-spacing: .14em; font-size: .68rem; }
+.eyebrow span { width: 20px; height: 2px; background: #14857a; }
+h1 { font-size: clamp(2.2rem, 5vw, 3.3rem); line-height: 1.13; letter-spacing: -.055em; margin: .42rem 0 .7rem; }
+.meta, .timestamp { gap: .5rem; flex-wrap: wrap; }
+.meta, small, p { color: var(--muted); font-size: .84rem; }
+.timestamp svg { width: .95rem; height: .95rem; }
+.source { border-left: 1px solid #aebfc5; padding-left: .65rem; font-weight: 600; }
+.status-group { display: grid; justify-items: end; gap: .38rem; }
+.pill, .count { font-weight: 650; font-size: .78rem; border-radius: 99px; display: inline-flex; align-items: center; gap: .43rem; padding: .24rem .72rem; white-space: nowrap; }
+.pill::before { content: ""; width: .43rem; height: .43rem; background: currentColor; border-radius: 50%; }
+.review, .bad { background: #fff0d6; color: #854709; }
+.healthy, .good { background: #dcf4eb; color: #16634d; }
+.incomplete, .unknown, .count { background: #e9eff2; color: #425c6c; }
+.metrics { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: .85rem; margin-bottom: 1.15rem; }
+.metric, .panel { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; box-shadow: 0 2px 4px #203e4c06; }
+.metric { padding: 1.1rem 1.2rem; }
+.metric-head, .disk-head, footer { justify-content: space-between; gap: .5rem; }
+.metric-head { font-size: .83rem; font-weight: 650; color: #415966; }
+.icon { width: 31px; height: 31px; flex: none; }
+.icon svg { width: 18px; height: 18px; }
+.teal { background: #def5ee; color: #147964; }
+.blue { background: #e4f0fb; color: #27689c; }
+.purple { background: #eeebfa; color: #67559a; }
+.slate { background: #e9eff3; color: #486677; }
+.metric strong { display: block; margin: .48rem 0 .05rem; font-size: clamp(1.45rem, 2.5vw, 2.1rem); letter-spacing: -.055em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.metric em { font-style: normal; font-size: .65em; color: var(--muted); }
+.metric small { font-size: .78rem; }
+.panel, .split { margin-bottom: 1.1rem; }
+.panel { padding: 1.25rem 1.4rem; min-width: 0; }
+.section-head { gap: .65rem; margin-bottom: 1rem; }
+h2 { font-size: 1.12rem; letter-spacing: -.025em; }
+.count { padding: .04rem .48rem; }
+.findings ul { display: grid; gap: .66rem; }
+.findings li { display: flex; gap: .7rem; align-items: flex-start; }
+.finding-icon { color: #936016; background: #fff1d9; padding: .36rem; }
+.finding-icon svg { width: 1rem; height: 1rem; }
+.findings b, dt, dd, .disk-head, td, th, .empty { font-size: .88rem; }
+.notice { margin-top: .8rem; border-top: 1px solid var(--line); padding-top: .6rem; }
+.split { display: grid; grid-template-columns: 1.1fr 1fr; gap: 1.1rem; }
+.split > .panel { margin: 0; }
+dl { display: grid; grid-template-columns: auto 1fr; gap: .54rem 1.2rem; }
+dt, td { color: var(--muted); }
+dd { text-align: right; font-weight: 600; overflow-wrap: anywhere; }
+.drives { display: grid; gap: 1.15rem; }
+.drive-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: .85rem; }
+.drive-card { border: 1px solid var(--line); border-radius: 8px; padding: 1rem; }
+.drive-card h3 { margin: 0 0 .8rem; font-size: 1rem; }
+.drive-card h3 span { color: var(--muted); font-weight: 500; }
+.drive-card dl { align-items: center; }
+.disk-head span { font-variant-numeric: tabular-nums; font-size: .8rem; }
+.track { background: #e7eef0; height: .43rem; margin: .42rem 0 .28rem; border-radius: 1rem; overflow: hidden; }
+.track span { display: block; background: #309c91; height: 100%; border-radius: inherit; }
+.track.low span { background: #c68528; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; text-align: left; }
+td, th { padding: .65rem .7rem; vertical-align: middle; }
+thead th { background: #f0f5f6; color: #4a606e; font-size: .7rem; text-transform: uppercase; letter-spacing: .065em; }
+tbody tr + tr { border-top: 1px solid var(--line); }
+tbody th { font-weight: 600; }
+.target { font-family: Consolas, monospace; font-size: .85rem; }
+footer { color: var(--muted); padding-block: .2rem 1.5rem; font-size: .78rem; }
+@media (max-width: 850px) {
+  .metrics { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .split { grid-template-columns: 1fr; }
+}
+@media (max-width: 550px) {
+  .top { flex-wrap: wrap; row-gap: .35rem; padding-block: .65rem; }
+  nav { gap: .7rem; }
+  nav a { font-size: .77rem; }
+  .intro { align-items: flex-start; flex-direction: column; padding-block: 1.65rem 1rem; }
+  .status-group { display: flex; align-items: center; gap: .5rem; }
+  .metrics { gap: .55rem; }
+  .metric, .panel { padding: .9rem; }
+  .metric-head { display: block; }
+  .icon { display: none; }
+  .panel table { min-width: 32rem; }
+  .source { padding-left: .4rem; }
+}
+@media print {
+  :root { background: white; }
+  header, footer a { display: none; }
+  .inner { max-width: none; padding: 0; }
+  .intro { padding-top: 0; }
+  .metrics { grid-template-columns: repeat(4, 1fr); }
+  .panel, .metric, tr { break-inside: avoid; box-shadow: none; }
+  .table-wrap { overflow: visible; }
+}
+</style></head>
+<body><header><div class="top inner"><a class="brand" href="#overview"><i><svg aria-hidden='true' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'><path d='M2 12h5l3-8 4 16 3-8h5'/></svg></i>Windows Health</a>
+<nav aria-label="Report sections"><a href="#system">System</a><a href="#storage">Drives</a><a href="#network">Network</a><a href="#services">Services</a></nav></div></header>
+<main class="inner" id="overview"><div class="intro"><div><div class="eyebrow"><span></span> Diagnostics report</div>
+<h1>Health overview</h1><div class="meta"><span class="timestamp"><svg aria-hidden='true' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'><path d='M21 12a9 9 0 1 1-18 0 9 9 0 1 1 18 0z M12 7v5l3 2'/></svg> 16 Apr 2026 &middot; 09:42 +00:00</span><span class="source">Fictional sample</span></div></div>
+<div class="status-group"><small>Overall status</small><span class="pill review">Needs review</span></div></div>
+<div class="metrics"><article class="metric"><div class="metric-head"><span>Memory in use</span><i class="icon teal"><svg aria-hidden='true' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'><path d='M3 6h18v11H3z M6 17v3m4-3v3m4-3v3m4-3v3 M7 10v3m5-3v3m5-3v3'/></svg></i></div>
+<strong>62.5%</strong><small>Of visible physical RAM</small></article><article class="metric"><div class="metric-head"><span>Lowest disk free</span><i class="icon blue"><svg aria-hidden='true' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'><path d='M5 5h14l3 10v4H2v-4z M3 14h18m-5 3h2'/></svg></i></div>
+<strong>12%</strong><small>Across measured fixed drives</small></article><article class="metric"><div class="metric-head"><span>Network checks</span><i class="icon purple"><svg aria-hidden='true' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'><path d='M9 3h6v5H9z M2 16h6v5H2z M16 16h6v5h-6z M12 8v4m-7 4v-4h14v4'/></svg></i></div>
+<strong>2<em> / 3</em></strong><small>IPv4 probes passed</small></article><article class="metric"><div class="metric-head"><span>Stopped services</span><i class="icon slate"><svg aria-hidden='true' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'><path d='M3 4h18v6H3z M3 14h18v6H3z M6 7h2m-2 10h2'/></svg></i></div>
+<strong>1</strong><small>Automatic startup only</small></article></div>
+<section class="panel findings"><div class="section-head"><h2>Health warnings</h2><span class="count">3</span></div><ul><li><i class='finding-icon'><svg aria-hidden='true' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'><path d='M12 3 2 20h20z M12 9v4m0 3v.2'/></svg></i><div><b>Low disk space on C:</b><p>Free space is below 15% of this drive&#39;s capacity.</p></div></li><li><i class='finding-icon'><svg aria-hidden='true' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'><path d='M12 3 2 20h20z M12 9v4m0 3v.2'/></svg></i><div><b>Drive health warning on Disk 1</b><p>Windows reports a drive health warning. The drive has recorded uncorrected I/O errors.</p></div></li><li><i class='finding-icon'><svg aria-hidden='true' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'><path d='M12 3 2 20h20z M12 9v4m0 3v.2'/></svg></i><div><b>DNS resolution failed</b><p>DNS query timed out.</p></div></li></ul></section>
+<div class="split" id="system"><section class="panel"><div class="section-head"><h2>System information</h2></div><dl>
+<dt>Operating system</dt><dd>Windows 11 Pro</dd><dt>Version / build</dt><dd>10.0.26100 / 26100</dd>
+<dt>Processor</dt><dd>Example Eight-Core Processor</dd><dt>Visible RAM</dt><dd>16 GiB</dd><dt>Uptime</dt><dd>4d 6h 3m</dd></dl></section>
+<section class="panel"><div class="section-head"><h2>Disk capacity</h2></div><ul class="drives"><li><div class='disk-head'><b>C:</b><span>12% free</span></div><div class='track low' aria-hidden='true'><span style='width:88%'></span></div><p>60 GiB free of 500 GiB</p></li><li><div class='disk-head'><b>D:</b><span>64% free</span></div><div class='track ' aria-hidden='true'><span style='width:36%'></span></div><p>160 GiB free of 250 GiB</p></li></ul></section></div>
+<section class="panel" id="storage"><div class="section-head"><h2>Physical drive health</h2></div><div class='drive-grid'><article class="drive-card"><h3>Disk 0 <span>&middot; SSD</span></h3>
+<dl><dt>Windows health</dt><dd><span class="pill good">Healthy</span></dd>
+<dt>Temperature</dt><dd>38 &deg;C</dd><dt>Endurance used</dt><dd>6%</dd>
+<dt>Uncorrected reads</dt><dd>0</dd>
+<dt>Uncorrected writes</dt><dd>0</dd></dl></article><article class="drive-card"><h3>Disk 1 <span>&middot; HDD</span></h3>
+<dl><dt>Windows health</dt><dd><span class="pill bad">Warning</span></dd>
+<dt>Temperature</dt><dd>33 &deg;C</dd>
+<dt>Uncorrected reads</dt><dd>2</dd>
+<dt>Uncorrected writes</dt><dd>0</dd></dl></article></div></section>
+<section class="panel" id="network"><div class="section-head"><h2>Network diagnostics</h2></div>
+<div class="table-wrap" tabindex="0" aria-label="Network diagnostics table"><table><thead><tr><th>Check</th><th>Target</th><th>Result</th><th>Observation</th></tr></thead><tbody><tr><th scope='row'>Internet connectivity</th><td class='target'>1.1.1.1:443</td><td><span class='pill good'>Passed</span></td><td>TCP connection established.</td></tr><tr><th scope='row'>DNS resolution</th><td class='target'>example.com</td><td><span class='pill bad'>Failed</span></td><td>DNS query timed out.</td></tr><tr><th scope='row'>Default gateway</th><td class='target'>192.0.2.1</td><td><span class='pill good'>Passed</span></td><td>ICMP echo reply in 2 ms.</td></tr></tbody></table></div></section>
+<section class="panel" id="services"><div class="section-head"><h2>Stopped automatic services</h2></div><div class='table-wrap' tabindex='0' aria-label='Stopped services table'><table><thead><tr><th>Display name</th><th>Service name</th><th>State</th></tr></thead><tbody><tr><th scope='row'>Example Inventory Service</th><td class='target'>ExampleInventory</td><td><span class='pill bad'>Stopped</span></td></tr></tbody></table></div></section>
+<footer><span>Windows Health &amp; Diagnostics Tool</span><a href="#overview">Back to top &uarr;</a></footer></main></body></html>

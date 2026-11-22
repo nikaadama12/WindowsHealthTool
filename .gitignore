@@ -1,0 +1,13 @@
+# Live exports always go under reports/. Only the fictional HTML is published.
+/reports/
+*.html
+!/samples/sample-report.html
+*.json
+
+# Local tooling and transient files
+.vscode/
+.idea/
+*.log
+*.tmp
+Thumbs.db
+Desktop.ini
