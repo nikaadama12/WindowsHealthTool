@@ -6,11 +6,13 @@
     Write the same snapshot and findings to JSON alongside the HTML.
 .PARAMETER Sample
     Use the bundled fictional snapshot. All live probes are skipped.
+.PARAMETER OpenReport
+    Open the saved HTML report in the default application.
 .EXAMPLE
     .\Start-HealthCheck.ps1 -ExportJson
 #>
 [CmdletBinding()]
-param([switch]$ExportJson, [switch]$Sample)
+param([switch]$ExportJson, [switch]$Sample, [switch]$OpenReport)
 
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'src/Health.ps1')
@@ -40,5 +42,13 @@ $jsonPath = $null
 if ($ExportJson) {
     $jsonPath = Join-Path $directory "$name.json"
     [IO.File]::WriteAllText($jsonPath, $json, $utf8)
+}
+if ($OpenReport) {
+    Write-Host "Saved HTML report to $htmlPath"
+    try {
+        Invoke-Item -LiteralPath $htmlPath
+    } catch {
+        throw "Could not open the saved report. Open '$htmlPath' in a browser. $($_.Exception.Message)"
+    }
 }
 [pscustomobject]@{ Status = $health.Status; HtmlPath = $htmlPath; JsonPath = $jsonPath }

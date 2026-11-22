@@ -8,23 +8,45 @@ A read-only PowerShell tool for first-pass Windows 11 troubleshooting. Run it fr
 
 ## Quick start
 
-Download or clone the project, open **Windows PowerShell** in the project folder, and run the following commands. The tool uses Windows PowerShell 5.1 and built-in Windows networking and CIM commands. PowerShell 7 on Windows also works. A writable project folder is required for exports.
+1. Clone the repository or download the GitHub ZIP. For a ZIP, choose **Extract All** and open the extracted folder containing `Start-HealthCheck.ps1`. Use a folder you can write to.
+2. Review the scripts and `Run-HealthCheck.bat`. For a trusted ZIP download, follow [Windows execution policy](#windows-execution-policy) below if Windows marks the scripts as downloaded.
+3. Double-click **Run-HealthCheck.bat**. It starts Windows PowerShell 5.1 with your current execution policy, saves HTML and JSON under `reports\`, and opens the HTML in your default application. You can run it as a standard user.
+
+### Run from PowerShell
+
+Open Windows PowerShell 5.1 or PowerShell 7 on Windows in the extracted project folder. To save both formats and open the dashboard, run:
 
 ```powershell
-$result = .\Start-HealthCheck.ps1 -ExportJson
-Invoke-Item -LiteralPath $result.HtmlPath
+$result = .\Start-HealthCheck.ps1 -ExportJson -OpenReport
 ```
 
-Omit `-ExportJson` for HTML alone. Each run creates uniquely named files under `reports\` next to the script. The returned object exposes `Status`, `HtmlPath`, and `JsonPath`.
+Omit `-ExportJson` for HTML alone. Omit `-OpenReport` to save the report for later. Each run creates uniquely named files under `reports\` next to the script. The returned object exposes `Status`, `HtmlPath`, and `JsonPath`.
 
 To try the report offline using only fictional data, run:
 
 ```powershell
-$demo = .\Start-HealthCheck.ps1 -Sample
-Invoke-Item -LiteralPath $demo.HtmlPath
+$demo = .\Start-HealthCheck.ps1 -Sample -OpenReport
 ```
 
-If a managed PC blocks script execution, follow your organization's approved script-running procedure. The bundled sample HTML opens directly in a browser.
+### Windows execution policy
+
+The project scripts are unsigned. If PowerShell says a script “is not digitally signed” or “running scripts is disabled,” run these commands in **Windows PowerShell** to see the effective policy and where it comes from.
+
+```powershell
+Get-ExecutionPolicy
+Get-ExecutionPolicy -List
+```
+
+- **RemoteSigned** can block unsigned files marked as downloaded, including the helper scripts in `src\`. After reviewing the source and deciding you trust this copy, right-click the downloaded ZIP, choose **Properties**, select **Unblock** if available, then **Apply**. Extract it again into a fresh folder and run the launcher there. This removes the download mark for that copy and leaves the policy in place.
+- **Restricted** blocks script files. On a personal PC where you control the policy, you can launch one Windows PowerShell process with `RemoteSigned` after reviewing the project and handling any download mark. Run the command below from the project folder. The setting expires when that process exits.
+
+  ```powershell
+  powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\Start-HealthCheck.ps1 -ExportJson -OpenReport
+  ```
+
+- **AllSigned** requires a trusted signature even for local scripts. On a managed PC, follow your organization's approved procedure. `MachinePolicy` and `UserPolicy` take precedence over process settings. You can open `samples\sample-report.html` to view the fictional dashboard directly.
+
+Microsoft documents how download marks, signatures and policy scopes interact. [Windows PowerShell execution policies](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies?view=powershell-5.1)
 
 ## Checks and interpretation
 
@@ -78,6 +100,7 @@ The suite uses synthetic inputs and requires no modules, network access or admin
 
 | Path | Purpose |
 | --- | --- |
+| `Run-HealthCheck.bat` | Double-click launcher for Windows PowerShell 5.1 |
 | `Start-HealthCheck.ps1` | Command-line entry point and local exports |
 | `src/Collect.ps1` | Windows data collection and network probes |
 | `src/Health.ps1` | Thresholds and health assessment |
