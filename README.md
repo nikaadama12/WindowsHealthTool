@@ -9,12 +9,12 @@ A read-only PowerShell tool for first-pass Windows 11 troubleshooting. Run it fr
 ## Quick start
 
 1. Clone the repository or download the GitHub ZIP. For a ZIP, choose **Extract All** and open the extracted folder containing `Start-HealthCheck.ps1`. Use a folder you can write to.
-2. Review the scripts and `Run-HealthCheck.bat`. For a trusted ZIP download, follow [Windows execution policy](#windows-execution-policy) below if Windows marks the scripts as downloaded.
-3. Double-click **Run-HealthCheck.bat**. It starts Windows PowerShell 5.1 with your current execution policy, saves HTML and JSON under `reports\`, and opens the HTML in your default application. You can run it as a standard user.
+2. Review `Run-HealthCheck.bat`, `Start-HealthCheck.ps1`, and the scripts in `src\`. Double-click **Run-HealthCheck.bat**. If Windows marked the scripts as downloaded and your policy is `RemoteSigned`, the launcher lists the affected files. Type **YES** to unblock those files if you trust them, or press **Enter** to cancel.
+3. The launcher runs Windows PowerShell 5.1 as your current user, saves HTML and JSON under `reports\`, and opens the HTML in your default application.
 
 ### Run from PowerShell
 
-Open Windows PowerShell 5.1 or PowerShell 7 on Windows in the extracted project folder. To save both formats and open the dashboard, run:
+Open Windows PowerShell 5.1 or PowerShell 7 on Windows in the extracted project folder. For a downloaded ZIP, see [Windows execution policy](#windows-execution-policy) if the script is blocked. To save both formats and open the dashboard, run:
 
 ```powershell
 $result = .\Start-HealthCheck.ps1 -ExportJson -OpenReport
@@ -37,7 +37,14 @@ Get-ExecutionPolicy
 Get-ExecutionPolicy -List
 ```
 
-- **RemoteSigned** can block unsigned files marked as downloaded, including the helper scripts in `src\`. After reviewing the source and deciding you trust this copy, right-click the downloaded ZIP, choose **Properties**, select **Unblock** if available, then **Apply**. Extract it again into a fresh folder and run the launcher there. This removes the download mark for that copy and leaves the policy in place.
+- **RemoteSigned** blocks unsigned scripts with an internet download mark. Starting another PowerShell window with `-ExecutionPolicy RemoteSigned` still enforces that rule. **Already extracted the ZIP?** Use the launcher above, or run the following commands from the extracted folder after reviewing and trusting the four files. This removes their download marks and keeps your policy in place.
+
+  ```powershell
+  Unblock-File -LiteralPath '.\Start-HealthCheck.ps1', '.\src\Collect.ps1', '.\src\Health.ps1', '.\src\Report.ps1'
+  $result = .\Start-HealthCheck.ps1 -ExportJson -OpenReport
+  ```
+
+  You can also unblock a reviewed ZIP before extraction. Right-click it, choose **Properties**, select **Unblock** if available, then **Apply**. Extract it into a fresh folder.
 - **Restricted** blocks script files. On a personal PC where you control the policy, you can launch one Windows PowerShell process with `RemoteSigned` after reviewing the project and handling any download mark. Run the command below from the project folder. The setting expires when that process exits.
 
   ```powershell
